@@ -47,7 +47,7 @@ const int L_pin = lPin;
 
 unsigned int codeLen;
 String buffr;
-char tagCode[tagSize];
+char tagCode[tagSize],str[3];
 String s ;
 
 
@@ -90,7 +90,7 @@ void redFlash() {
     delay(10);
   }
 
-  for (int r = 1023; r >= 0; b -= 1) {
+  for (int r = 1023; r >= 0; r -= 1) {
 
     analogWrite(redPin, r);
     analogWrite(bluePin, 0);
@@ -122,7 +122,7 @@ void writeRelay() {
 
 }
 
-void callback(char* topic, byte* payload, unsigned int length) {
+void MQTT_callback(char* topic, byte* payload, unsigned int length) {
 
   byte buff[length];
 
@@ -239,8 +239,8 @@ void callback(char* topic, byte* payload, unsigned int length) {
 
   }
 
-
-  client.publish("IWU_Response", s);
+  s.toCharArray(str, 3);
+  client.publish("IWU_Response", str);
   writeRelay();
 
 }
