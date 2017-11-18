@@ -134,14 +134,12 @@ void callback(char* topic, byte* payload, unsigned int length) {
   }
 
   String req = String((char*)buff);
-
-  //Serial.println();  Serial.print("Request: ");
   req.remove(3);
-  //Serial.println(req);
+
 
   if (req == "f1n") {
 
-    //Serial.println("Fan 1 on");
+
     EEPROM.write(F1_addr, 1);
     EEPROM.commit();
     s = "f1n"; // a reply to client indicating command was successfully executed
@@ -150,7 +148,7 @@ void callback(char* topic, byte* payload, unsigned int length) {
 
   else if (req == "f1f") {
 
-    //Serial.println("Fan 1 OFF");
+
     EEPROM.write(F1_addr, 0);
     EEPROM.commit();
     s = "f1f";
@@ -159,7 +157,7 @@ void callback(char* topic, byte* payload, unsigned int length) {
 
   else if (req == "f2n") {
 
-    //Serial.println("Fan 2 ON");
+
     EEPROM.write(F2_addr, 1);
     EEPROM.commit();
     s = "f2n";
@@ -168,7 +166,6 @@ void callback(char* topic, byte* payload, unsigned int length) {
 
   else if (req == "f2f") {
 
-    //Serial.println("Fan 2 OFF");
     EEPROM.write(F2_addr, 0);
     EEPROM.commit();
     s = "f2f";
@@ -177,7 +174,7 @@ void callback(char* topic, byte* payload, unsigned int length) {
 
   else if (req == "f3n") {
 
-    //Serial.println("Fan 3 ON");
+
     EEPROM.write(F3_addr, 1);
     EEPROM.commit();
     s = "f3n";
@@ -186,7 +183,6 @@ void callback(char* topic, byte* payload, unsigned int length) {
 
   else if (req == "f3f") {
 
-    //Serial.println("Fan 3 OFF");
     EEPROM.write(F3_addr, 0);
     EEPROM.commit();
     s = "f3f";
@@ -195,7 +191,7 @@ void callback(char* topic, byte* payload, unsigned int length) {
 
   else if (req == "l1n") {
 
-    //Serial.println("Light ON");
+
     EEPROM.write(L_addr, 1);
     EEPROM.commit();
     s = "ln";
@@ -204,7 +200,6 @@ void callback(char* topic, byte* payload, unsigned int length) {
 
   else if (req == "l1f") {
 
-    //Serial.println("Light OFF");
     EEPROM.write(L_addr, 0);
     EEPROM.commit();
     s = "lf";
@@ -214,43 +209,39 @@ void callback(char* topic, byte* payload, unsigned int length) {
   else if (req == "f1s") {
 
     s = String(EEPROM.read(F1_addr));
-    //Serial.println("Fan 1 Status is : ");
-    //Serial.print(s);
+
 
   }
 
   else if (req == "f2s") {
 
     s = String(EEPROM.read(F2_addr));
-    //Serial.println("Fan 2 Status is: ");
-    //Serial.print(s);
+
 
   }
 
   else if (req == "f3s") {
 
     s = String(EEPROM.read(F3_addr));
-    //Serial.println("Fan 3 Status is: ");
-    //Serial.print(s);
 
   }
 
   else if (req == "l1s") {
 
     s = String(EEPROM.read(L_addr));
-    //Serial.println("Light Status is: ");
-    //Serial.print(s);
 
   }
 
   else {
 
     s = "404 Not Found";
-    //Serial.println("Sending 404");
+
 
   }
 
 
+  client.publish("IWU_Response", s);
+  writeRelay();
 
 }
 
@@ -282,5 +273,6 @@ void loop() {
 
   rgbCycle();
   writeRelay();
+  client.loop();
 
 }
