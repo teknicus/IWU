@@ -44,11 +44,6 @@ const int F2_pin = f2Pin;
 const int F3_pin = f3Pin;
 const int L_pin = lPin;
 
-int F1_stat = 0;
-int F2_stat = 0;
-int F3_stat = 0;
-int L_stat = 0;
-
 
 unsigned int codeLen;
 String buffr;
@@ -104,18 +99,18 @@ void redFlash() {
   }
 }
 
-void blinkGreen(){
+void blinkGreen() {
 
-    analogWrite(redPin, 0);
-    analogWrite(bluePin, 0);
-    analogWrite(greenPin, 1023);
-    delay(1000);
+  analogWrite(redPin, 0);
+  analogWrite(bluePin, 0);
+  analogWrite(greenPin, 1023);
+  delay(1000);
 
-    analogWrite(redPin, 0);
-    analogWrite(bluePin, 0);
-    analogWrite(greenPin, 0);
-    delay(1000);    
-      
+  analogWrite(redPin, 0);
+  analogWrite(bluePin, 0);
+  analogWrite(greenPin, 0);
+  delay(1000);
+
 }
 
 void writeRelay() {
@@ -124,6 +119,138 @@ void writeRelay() {
   digitalWrite(F2_pin, EEPROM.read(F2_addr));
   digitalWrite(F3_pin, EEPROM.read(F3_addr));
   digitalWrite(L_pin, EEPROM.read(L_addr));
+
+}
+
+void callback(char* topic, byte* payload, unsigned int length) {
+
+  byte buff[length];
+
+  //Serial.println();  Serial.print("Message: ");
+
+  for (int i = 0; i < length; i++) {
+    //Serial.print((char)payload[i]);
+    buff[i] = payload[i];
+  }
+
+  String req = String((char*)buff);
+
+  //Serial.println();  Serial.print("Request: ");
+  req.remove(3);
+  //Serial.println(req);
+
+  if (req == "f1n") {
+
+    //Serial.println("Fan 1 on");
+    EEPROM.write(F1_addr, 1);
+    EEPROM.commit();
+    s = "f1n"; // a reply to client indicating command was successfully executed
+
+  }
+
+  else if (req == "f1f") {
+
+    //Serial.println("Fan 1 OFF");
+    EEPROM.write(F1_addr, 0);
+    EEPROM.commit();
+    s = "f1f";
+
+  }
+
+  else if (req == "f2n") {
+
+    //Serial.println("Fan 2 ON");
+    EEPROM.write(F2_addr, 1);
+    EEPROM.commit();
+    s = "f2n";
+
+  }
+
+  else if (req == "f2f") {
+
+    //Serial.println("Fan 2 OFF");
+    EEPROM.write(F2_addr, 0);
+    EEPROM.commit();
+    s = "f2f";
+
+  }
+
+  else if (req == "f3n") {
+
+    //Serial.println("Fan 3 ON");
+    EEPROM.write(F3_addr, 1);
+    EEPROM.commit();
+    s = "f3n";
+
+  }
+
+  else if (req == "f3f") {
+
+    //Serial.println("Fan 3 OFF");
+    EEPROM.write(F3_addr, 0);
+    EEPROM.commit();
+    s = "f3f";
+
+  }
+
+  else if (req == "l1n") {
+
+    //Serial.println("Light ON");
+    EEPROM.write(L_addr, 1);
+    EEPROM.commit();
+    s = "ln";
+
+  }
+
+  else if (req == "l1f") {
+
+    //Serial.println("Light OFF");
+    EEPROM.write(L_addr, 0);
+    EEPROM.commit();
+    s = "lf";
+
+  }
+
+  else if (req == "f1s") {
+
+    s = String(EEPROM.read(F1_addr));
+    //Serial.println("Fan 1 Status is : ");
+    //Serial.print(s);
+
+  }
+
+  else if (req == "f2s") {
+
+    s = String(EEPROM.read(F2_addr));
+    //Serial.println("Fan 2 Status is: ");
+    //Serial.print(s);
+
+  }
+
+  else if (req == "f3s") {
+
+    s = String(EEPROM.read(F3_addr));
+    //Serial.println("Fan 3 Status is: ");
+    //Serial.print(s);
+
+  }
+
+  else if (req == "l1s") {
+
+    s = String(EEPROM.read(L_addr));
+    //Serial.println("Light Status is: ");
+    //Serial.print(s);
+
+  }
+
+  else {
+
+    s = "404 Not Found";
+    //Serial.println("Sending 404");
+
+  }
+
+
 
 }
 
@@ -145,13 +272,15 @@ void setup() {
   }
 
   blinkGreen();
-  
+
   client.setServer(mqtt_server, 1883);
   client.setCallback(MQTT_callback);
-  
+
 }
 
 void loop() {
 
   rgbCycle();
+  writeRelay();
+
 }
