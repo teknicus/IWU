@@ -12,6 +12,12 @@
 #define f3Pin D4
 #define lPin D6
 
+#define RFID_BAUDRATE 9600
+
+const char* ssid = "Trojan Horse";
+const char* password = "temppass";
+const char* mqtt_server = "192.168.43.143"; //Brokers' ip address
+
 //***********************************************************************
 
 
@@ -21,9 +27,8 @@
 #include <EEPROM.h>
 #include <PubSubClient.h>
 
-unsigned int codeLen;
-String buffr;
-char tagCode[tagSize];
+WiFiClient espClient;
+PubSubClient client(espClient);
 
 uint8_t redPin = rPin;
 uint8_t greenPin = gPin;
@@ -45,6 +50,12 @@ int F3_stat = 0;
 int L_stat = 0;
 
 
+unsigned int codeLen;
+String buffr;
+char tagCode[tagSize];
+String s ;
+
+
 void readrfid() {
 
   buffr = Serial.readString();
@@ -63,7 +74,7 @@ void rgbCycle() {
         analogWrite(greenPin, g);
         delayMicroseconds(1);
       }
-      
+
   for (int r = 1023; r >= 0; r -= 5)
     for (int g = 1023; g >= 0; g -= 5)
       for (int b = 1023; b >= 0; b -= 5) {
@@ -75,25 +86,72 @@ void rgbCycle() {
       }
 }
 
+void redFlash() {
+
+  for (int r = 0; r < 1023; r += 1) {
+    analogWrite(redPin, r);
+    analogWrite(bluePin, 0);
+    analogWrite(greenPin, 0);
+    delay(10);
+  }
+
+  for (int r = 1023; r >= 0; b -= 1) {
+
+    analogWrite(redPin, r);
+    analogWrite(bluePin, 0);
+    analogWrite(greenPin, 0);
+    delay(10);
+  }
+}
+
+void blinkGreen(){
+
+    analogWrite(redPin, 0);
+    analogWrite(bluePin, 0);
+    analogWrite(greenPin, 1023);
+    delay(1000);
+
+    analogWrite(redPin, 0);
+    analogWrite(bluePin, 0);
+    analogWrite(greenPin, 0);
+    delay(1000);    
+      
+}
+
 void writeRelay() {
-  
+
   digitalWrite(F1_pin, EEPROM.read(F1_addr));
   digitalWrite(F2_pin, EEPROM.read(F2_addr));
   digitalWrite(F3_pin, EEPROM.read(F3_addr));
   digitalWrite(L_pin, EEPROM.read(L_addr));
-  
+
 }
 
 void setup() {
-  
+
   pinMode(F1_pin, OUTPUT);
   pinMode(F2_pin, OUTPUT);
   pinMode(F3_pin, OUTPUT);
   pinMode(L_pin, OUTPUT);
 
+  EEPROM.begin(512); // Allocating 512 bytes of EEPROM
+
+  Serial.begin(RFID_BAUDRATE);
+
+  WiFi.begin(ssid, password);
+
+  while (WiFi.status() != WL_CONNECTED) {
+    redFlash();
+  }
+
+  blinkGreen();
+  
+  client.setServer(mqtt_server, 1883);
+  client.setCallback(MQTT_callback);
+  
 }
 
 void loop() {
 
- rgbCycle();
+  rgbCycle();
 }
