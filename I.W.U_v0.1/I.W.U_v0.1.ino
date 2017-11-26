@@ -47,14 +47,20 @@ const int L_pin = lPin;
 
 unsigned int codeLen;
 String buffr;
-char tagCode[tagSize], str[3];
+char tagCode[tagSize], str[3], authRequest[tagSize+4];
 String s ;
+int authToken;
 
-
-void readrfid() {
+void readrfid() { // test
 
   buffr = Serial.readString();
-  buffr.toCharArray(tagCode, codeLen);
+  authToken = random(1000,9999);
+
+  buffr += String(authToken);
+  buffr.toCharArray(tagCode, codeLen+4);
+    
+  client.publish("IWU_RFID_RAW", tagCode);
+  
 }
 
 void rgbCycle() {
@@ -131,7 +137,7 @@ void MQTT_callback(char* topic, byte* payload, unsigned int length) {
     topic_buff[i] = topic[i];
   }
 
-  String Topic = String((char*)buff);
+  String Topic = String((char*)topic_buff);
 
   if (Topic == "IWU_Trig") {
 
@@ -256,7 +262,7 @@ void MQTT_callback(char* topic, byte* payload, unsigned int length) {
   }
   
   else
-    return
+    return;
   }
 
 void setup() {
