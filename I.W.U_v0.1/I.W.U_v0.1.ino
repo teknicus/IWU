@@ -47,7 +47,7 @@ const int L_pin = lPin;
 
 unsigned int codeLen;
 String buffr;
-char tagCode[tagSize],str[3];
+char tagCode[tagSize], str[3];
 String s ;
 
 
@@ -124,126 +124,140 @@ void writeRelay() {
 
 void MQTT_callback(char* topic, byte* payload, unsigned int length) {
 
-  byte buff[length];
+  char topic_buff[8];//Topic for sending triggers to the IWU is "IWU_Trig" which has 8 characters
 
-  //Serial.println();  Serial.print("Message: ");
-
-  for (int i = 0; i < length; i++) {
+  for (int i = 0; i < 8; i++) {
     //Serial.print((char)payload[i]);
-    buff[i] = payload[i];
+    topic_buff[i] = topic[i];
   }
 
-  String req = String((char*)buff);
-  req.remove(3);
+  String Topic = String((char*)buff);
+
+  if (Topic == "IWU_Trig") {
+
+    byte buff[length];
+
+    //Serial.println();  Serial.print("Message: ");
+
+    for (int i = 0; i < length; i++) {
+      //Serial.print((char)payload[i]);
+      buff[i] = payload[i];
+    }
+
+    String req = String((char*)buff);
+    req.remove(3);
 
 
-  if (req == "f1n") {
+    if (req == "f1n") {
 
 
-    EEPROM.write(F1_addr, 1);
-    EEPROM.commit();
-    s = "f1n"; // a reply to client indicating command was successfully executed
+      EEPROM.write(F1_addr, 1);
+      EEPROM.commit();
+      s = "f1n"; // a reply to client indicating command was successfully executed
 
+    }
+
+    else if (req == "f1f") {
+
+
+      EEPROM.write(F1_addr, 0);
+      EEPROM.commit();
+      s = "f1f";
+
+    }
+
+    else if (req == "f2n") {
+
+
+      EEPROM.write(F2_addr, 1);
+      EEPROM.commit();
+      s = "f2n";
+
+    }
+
+    else if (req == "f2f") {
+
+      EEPROM.write(F2_addr, 0);
+      EEPROM.commit();
+      s = "f2f";
+
+    }
+
+    else if (req == "f3n") {
+
+
+      EEPROM.write(F3_addr, 1);
+      EEPROM.commit();
+      s = "f3n";
+
+    }
+
+    else if (req == "f3f") {
+
+      EEPROM.write(F3_addr, 0);
+      EEPROM.commit();
+      s = "f3f";
+
+    }
+
+    else if (req == "l1n") {
+
+
+      EEPROM.write(L_addr, 1);
+      EEPROM.commit();
+      s = "ln";
+
+    }
+
+    else if (req == "l1f") {
+
+      EEPROM.write(L_addr, 0);
+      EEPROM.commit();
+      s = "lf";
+
+    }
+
+    else if (req == "f1s") {
+
+      s = String(EEPROM.read(F1_addr));
+
+
+    }
+
+    else if (req == "f2s") {
+
+      s = String(EEPROM.read(F2_addr));
+
+
+    }
+
+    else if (req == "f3s") {
+
+      s = String(EEPROM.read(F3_addr));
+
+    }
+
+    else if (req == "l1s") {
+
+      s = String(EEPROM.read(L_addr));
+
+    }
+
+    else {
+
+      s = "404 Not Found";
+
+
+    }
+
+    s.toCharArray(str, 3);
+    client.publish("IWU_Response", str);
+    writeRelay();
   }
-
-  else if (req == "f1f") {
-
-
-    EEPROM.write(F1_addr, 0);
-    EEPROM.commit();
-    s = "f1f";
-
+  
+  else
+    return
   }
-
-  else if (req == "f2n") {
-
-
-    EEPROM.write(F2_addr, 1);
-    EEPROM.commit();
-    s = "f2n";
-
-  }
-
-  else if (req == "f2f") {
-
-    EEPROM.write(F2_addr, 0);
-    EEPROM.commit();
-    s = "f2f";
-
-  }
-
-  else if (req == "f3n") {
-
-
-    EEPROM.write(F3_addr, 1);
-    EEPROM.commit();
-    s = "f3n";
-
-  }
-
-  else if (req == "f3f") {
-
-    EEPROM.write(F3_addr, 0);
-    EEPROM.commit();
-    s = "f3f";
-
-  }
-
-  else if (req == "l1n") {
-
-
-    EEPROM.write(L_addr, 1);
-    EEPROM.commit();
-    s = "ln";
-
-  }
-
-  else if (req == "l1f") {
-
-    EEPROM.write(L_addr, 0);
-    EEPROM.commit();
-    s = "lf";
-
-  }
-
-  else if (req == "f1s") {
-
-    s = String(EEPROM.read(F1_addr));
-
-
-  }
-
-  else if (req == "f2s") {
-
-    s = String(EEPROM.read(F2_addr));
-
-
-  }
-
-  else if (req == "f3s") {
-
-    s = String(EEPROM.read(F3_addr));
-
-  }
-
-  else if (req == "l1s") {
-
-    s = String(EEPROM.read(L_addr));
-
-  }
-
-  else {
-
-    s = "404 Not Found";
-
-
-  }
-
-  s.toCharArray(str, 3);
-  client.publish("IWU_Response", str);
-  writeRelay();
-
-}
 
 void setup() {
 
