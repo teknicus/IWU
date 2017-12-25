@@ -1,14 +1,16 @@
-# IWU
-In Wall Unit for JARVIS (TPT)
+# I.W.U.
+###In Wall Unit for JARVIS
 
-/* v0.1 Unstable
+v0.1 Unstable
 
 Hardware Elements:
-  * Relay Board - 1
-  * LED Strip
-  * RFID Reader
-
+- 
+- Relay Board 1
+- LED Strip
+- RFID Reader
+ 
 Code Functions:
+- 
   * Read EEPROM and write values to relays
   * Rising Interrupt on buzzer pin to read RFID Tag
   * Publish RFID Tag data as string over MQTT
@@ -18,6 +20,5 @@ Code Functions:
   * Return Status of each relay when asked
 
 
-  Code By - Robin Biju Thomas
+  Code By - *Robin Biju Thomas*
 
-*/
