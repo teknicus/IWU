@@ -38,6 +38,7 @@ const int F1_addr = 0;
 const int F2_addr = 1;
 const int F3_addr = 2;
 const int L_addr = 3;
+const int curr_authToken_addr = 4;
 
 const int F1_pin = f1Pin;
 const int F2_pin = f2Pin;
@@ -47,20 +48,23 @@ const int L_pin = lPin;
 
 unsigned int codeLen;
 String buffr;
-char tagCode[tagSize], str[3], authRequest[tagSize+4];
+char tagCode[tagSize], str[3], authRequest[tagSize + 4];
 String s ;
 int authToken;
 
 void readrfid() { // test
 
   buffr = Serial.readString();
-  authToken = random(1000,9999);
+  authToken = random(1000, 9999);
 
   buffr += String(authToken);
-  buffr.toCharArray(tagCode, codeLen+4);
-    
+  buffr.toCharArray(tagCode, codeLen + 4);
+
   client.publish("IWU_RFID_RAW", tagCode);
-  
+
+  EEPROM.write(curr_authToken_addr, authToken);
+  EEPROM.commit();
+
 }
 
 void rgbCycle() {
@@ -260,10 +264,33 @@ void MQTT_callback(char* topic, byte* payload, unsigned int length) {
     client.publish("IWU_Response", str);
     writeRelay();
   }
-  
-  else
-    return;
+
+  else if (Topic == "IWU_authResponse") {
+
+    int authToken_valid = EEPROM.read(curr_authToken_addr);
+
+    byte buff[length];
+    
+    for (int i = 0; i < length; i++) {
+   
+      buff[i] = payload[i];
+    }
+
+    String req = String((char*)buff);
+    String responseToken = req;
+    responseToken.remove(4);
+
+    if(String(authToken_valid) == responseToken){
+      Serial.println("Authenticated");
+        
+        analogWrite(redPin, 0);
+        analogWrite(bluePin, 0);
+        analogWrite(greenPin, 1023);
+    }
   }
+  else  `
+    return;
+}
 
 void setup() {
 
